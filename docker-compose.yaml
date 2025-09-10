@@ -1,0 +1,32 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID}
+    ports:
+      - "1433:1433"
+    volumes:
+      - ${VOLUME_PATH}/.data/mssql:/var/opt/mssql/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "8001:5540"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+volumes:
+  redis_data:
