@@ -1,11 +1,14 @@
-﻿using ChefEye.Domain;
-using ChefEye.Domain.Commands;
+﻿using ChefEye.Api.Constants;
+using ChefEye.Api.StartupExtensions;
 using ChefEye.Contracts.Models.ConfigModels;
+using ChefEye.Domain;
+using ChefEye.Domain.Constants;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,18 +32,27 @@ builder.Services.AddControllers()
         opt.AddRouteComponents("odata", odataBuilder.GetEdmModel())
             .Select().Filter().OrderBy().Expand();
     });
-
-builder.Services
-        .AddOptions()
-            .AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreateOrderCommand>());
-
-builder.Services.AddDbContext<ChefEyeDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var configuration = builder.Configuration.GetConnectionString("Redis");
     return ConnectionMultiplexer.Connect(configuration);
 });
+
+builder.Services.AddDomainServices(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    builder.Configuration.GetSection("Jwt")
+);
+
+builder.Services
+    .AddAuthorizationBuilder()
+    .AddPolicy(AuthorizePolicies.Admin, policy => policy.RequireClaim(ClaimTypes.Role, Roles.Admin))
+    .AddPolicy(AuthorizePolicies.User, policy => policy.RequireClaim(ClaimTypes.Role, Roles.User));
+
+AuthenticationValidator.AddAuthenticationService(builder.Services, builder.Configuration);
+
+ServiceValidatorConfiguration.AddValidatorConfiguration(builder.Services);
 
 builder.Services.Configure<OrderLimitsOptions>(
     builder.Configuration.GetSection("OrderLimits"));
@@ -54,7 +66,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
+
 app.MapControllers();
 
 app.Run();

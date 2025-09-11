@@ -2,6 +2,7 @@
 using ChefEye.Domain.Handlers;
 using MediatR;
 using ChefEye.Contracts.Models;
+using ChefEye.Domain.DbContexts;
 
 namespace ChefEye.Domain.Commands;
 

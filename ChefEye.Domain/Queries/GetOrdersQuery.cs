@@ -1,5 +1,6 @@
 ﻿using ChefEye.Contracts.Http.Response;
 using ChefEye.Contracts.Models;
+using ChefEye.Domain.DbContexts;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

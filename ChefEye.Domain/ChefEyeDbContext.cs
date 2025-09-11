@@ -1,9 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using ChefEye.Contracts.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-namespace ChefEye.Domain;
+namespace ChefEye.Domain.DbContexts;
 
-public class ChefEyeDbContext : DbContext
+public class ChefEyeDbContext : IdentityDbContext<IdentityUser>
 {
 
     public DbSet<Order> Orders { set; get; }
@@ -11,7 +13,9 @@ public class ChefEyeDbContext : DbContext
     public DbSet<MenuItem> MenuItems { set; get; }
     public DbSet<OrderMenuItem> OrderMenuItems { set; get; }
 
-    public ChefEyeDbContext(DbContextOptions<ChefEyeDbContext> options) : base(options) { }
+    public ChefEyeDbContext(DbContextOptions<ChefEyeDbContext> dbContextOptions) : base(dbContextOptions)
+    {
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

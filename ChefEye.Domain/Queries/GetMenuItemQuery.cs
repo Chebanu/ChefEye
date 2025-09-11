@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using ChefEye.Contracts.Models;
 using Microsoft.EntityFrameworkCore;
+using ChefEye.Domain.DbContexts;
 
 namespace ChefEye.Domain.Queries;
 
