@@ -62,8 +62,8 @@ public class CreateOrderMenuItemCommandHandler : BaseRequestHandler<CreateOrderM
         var orderMenuItem = new Contracts.Models.OrderMenuItem
         {
             Id = Guid.NewGuid(),
-            OrderId = request.OrderId,
             MenuItemId = request.MenuItemId,
+            OrderId = request.OrderId,
             Quantity = request.Quantity
         };
 
