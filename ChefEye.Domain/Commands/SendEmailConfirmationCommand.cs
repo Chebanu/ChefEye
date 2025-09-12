@@ -58,10 +58,11 @@ public class SendEmailConfirmationCommandHandler : BaseRequestHandler<SendEmailC
             var confirmationLink = $"{request.BaseUrl.TrimEnd('/')}/users/confirm-email?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
 
             var smtpSettings = _smtp.CurrentValue;
+            string smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
 
             if (string.IsNullOrWhiteSpace(smtpSettings.Host) ||
                 string.IsNullOrWhiteSpace(smtpSettings.Username) ||
-                string.IsNullOrWhiteSpace(smtpSettings.Password) ||
+                string.IsNullOrWhiteSpace(smtpPassword) ||
                 string.IsNullOrWhiteSpace(smtpSettings.From))
             {
                 return new SendEmailConfirmationCommandResult
@@ -76,7 +77,7 @@ public class SendEmailConfirmationCommandHandler : BaseRequestHandler<SendEmailC
             client.Port = smtpSettings.Port;
             client.EnableSsl = smtpSettings.EnableSsl;
             client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(smtpSettings.Username, smtpSettings.Password);
+            client.Credentials = new NetworkCredential(smtpSettings.Username, smtpPassword);
 
             var mailMessage = new MailMessage
             {
