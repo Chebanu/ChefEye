@@ -1,4 +1,4 @@
-﻿namespace ChefEye.Contracts.Http;
+﻿namespace ChefEye.Contracts.Http.Request;
 
 public class RegisterUserRequest
 {

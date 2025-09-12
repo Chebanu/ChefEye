@@ -42,7 +42,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
 builder.Services.AddDomainServices(
     builder.Configuration.GetConnectionString("DefaultConnection"),
-    builder.Configuration.GetSection("Jwt")
+    builder.Configuration.GetSection("Jwt"),
+    builder.Configuration.GetSection("SmtpSettings")
 );
 
 builder.Services

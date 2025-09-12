@@ -1,4 +1,5 @@
 ﻿using ChefEye.Api.Validator;
+using ChefEye.Api.Validators;
 using ChefEye.Contracts.Http;
 using ChefEye.Contracts.Http.Request;
 using FluentValidation;
@@ -11,6 +12,7 @@ public static class ServiceValidatorConfiguration
     {
         return services.AddScoped<IValidator<RegisterUserRequest>, RegisterUserRequestValidator>()
                         .AddScoped<IValidator<AuthenticateUserRequest>, AuthenticateUserRequestValidator>()
-                        .AddScoped<IValidator<AdminUpdateUserRequest>, AdminUpdateUserRequestValidator>();
+                        .AddScoped<IValidator<AdminUpdateUserRequest>, AdminUpdateUserRequestValidator>()
+                        .AddScoped<IValidator<ConfirmEmailRequest>, ConfirmEmailRequestValidator>(); ;
     }
 }

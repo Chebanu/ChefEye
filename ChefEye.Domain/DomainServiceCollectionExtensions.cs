@@ -12,7 +12,7 @@ public static class DomainServiceCollectionExtensions
 {
     public static IServiceCollection AddDomainServices(this IServiceCollection services,
         string connectionString,
-        IConfiguration jwt)
+        IConfiguration jwt, IConfiguration smpt)
     {
         services
             .AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -28,6 +28,7 @@ public static class DomainServiceCollectionExtensions
         return services
         .AddOptions()
             .Configure<JwtSettings>(jwt)
+            .Configure<SmtpSettings>(smpt)
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreateOrderCommand>())
             .AddDbContext<ChefEyeDbContext>(options => options.UseSqlServer(connectionString));
     }

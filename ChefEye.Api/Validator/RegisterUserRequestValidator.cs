@@ -1,5 +1,5 @@
 ﻿using ChefEye.Api.Extensions;
-using ChefEye.Contracts.Http;
+using ChefEye.Contracts.Http.Request;
 using FluentValidation;
 
 namespace ChefEye.Api.Validator;
