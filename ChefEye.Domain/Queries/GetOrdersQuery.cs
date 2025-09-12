@@ -1,8 +1,10 @@
 ﻿using ChefEye.Contracts.Http.Response;
 using ChefEye.Contracts.Models;
 using ChefEye.Domain.DbContexts;
+using ChefEye.Domain.Handlers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ChefEye.Domain.Queries;
 
@@ -18,16 +20,17 @@ public class GetOrdersQueryResult
     public string[] Errors { get; init; } = [];
 }
 
-public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, GetOrdersQueryResult>
+public class GetOrdersQueryHandler : BaseRequestHandler<GetOrdersQuery, GetOrdersQueryResult>
 {
     private readonly ChefEyeDbContext _dbContext;
 
-    public GetOrdersQueryHandler(ChefEyeDbContext dbContext)
+    public GetOrdersQueryHandler(ILogger<BaseRequestHandler<GetOrdersQuery, GetOrdersQueryResult>> logger,
+        ChefEyeDbContext dbContext) : base(logger)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<GetOrdersQueryResult> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
+    protected override async Task<GetOrdersQueryResult> HandleInternal(GetOrdersQuery request, CancellationToken cancellationToken)
     {
         var errors = new List<string>();
         IQueryable<Order> query = _dbContext.Orders

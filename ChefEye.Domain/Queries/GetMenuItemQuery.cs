@@ -2,6 +2,8 @@
 using ChefEye.Contracts.Models;
 using Microsoft.EntityFrameworkCore;
 using ChefEye.Domain.DbContexts;
+using ChefEye.Domain.Handlers;
+using Microsoft.Extensions.Logging;
 
 namespace ChefEye.Domain.Queries;
 
@@ -17,16 +19,17 @@ public class GetMenuItemQueryResult
     public string[] Errors { get; init; } = [];
 }
 
-public class GetMenuItemQueryHandler : IRequestHandler<GetMenuItemQuery, GetMenuItemQueryResult>
+public class GetMenuItemQueryHandler : BaseRequestHandler<GetMenuItemQuery, GetMenuItemQueryResult>
 {
     private readonly ChefEyeDbContext _dbContext;
 
-    public GetMenuItemQueryHandler(ChefEyeDbContext dbContext)
+    public GetMenuItemQueryHandler(ILogger<BaseRequestHandler<GetMenuItemQuery, GetMenuItemQueryResult>> logger,
+        ChefEyeDbContext dbContext) : base(logger)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<GetMenuItemQueryResult> Handle(GetMenuItemQuery request, CancellationToken cancellationToken)
+    protected override async Task<GetMenuItemQueryResult> HandleInternal(GetMenuItemQuery request, CancellationToken cancellationToken)
     {
         var errors = new List<string>();
 
