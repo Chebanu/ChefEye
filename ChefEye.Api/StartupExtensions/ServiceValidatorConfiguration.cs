@@ -14,6 +14,8 @@ public static class ServiceValidatorConfiguration
                         .AddScoped<IValidator<AuthenticateUserRequest>, AuthenticateUserRequestValidator>()
                         .AddScoped<IValidator<AdminUpdateUserRequest>, AdminUpdateUserRequestValidator>()
                         .AddScoped<IValidator<ConfirmEmailRequest>, ConfirmEmailRequestValidator>()
-                        .AddScoped<IValidator<CreateMenuItemRequest>, CreateMenuItemRequestValidator>();
+                        .AddScoped<IValidator<CreateMenuItemRequest>, CreateMenuItemRequestValidator>()
+                        .AddScoped<IValidator<RequestPasswordResetRequest>, RequestPasswordResetValidator>()
+                        .AddScoped<IValidator<ResetPasswordRequest>, ResetPasswordRequestValidator>();
     }
 }

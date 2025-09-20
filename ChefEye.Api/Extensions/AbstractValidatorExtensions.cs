@@ -30,7 +30,7 @@ internal static class AbstractValidatorExtensions
             .WithMessage($"Password must only contain the following characters: {AllowedPasswordCharacters}.");
     }
 
-    public static void RuleForOptionalEmail<T>(this AbstractValidator<T> validator, Expression<Func<T, string?>> expression)
+    public static void RuleForOptionalEmail<T>(this AbstractValidator<T> validator, Expression<Func<T, string>> expression)
     {
         validator.RuleFor(expression)
             .EmailAddress()
@@ -54,7 +54,7 @@ internal static class AbstractValidatorExtensions
             .Length(10, 20)
             .WithMessage("Phone number must be between 10 and 20 characters long.");
     }
-    public static void RuleForFullName<T>(this AbstractValidator<T> validator, Expression<Func<T, string?>> expression)
+    public static void RuleForFullName<T>(this AbstractValidator<T> validator, Expression<Func<T, string>> expression)
     {
         validator.RuleFor(expression)
             .NotEmpty()
@@ -65,7 +65,7 @@ internal static class AbstractValidatorExtensions
             .WithMessage("Full name contains invalid characters.");
     }
 
-    private static bool HasAtLeastTwoWords(string? fullName)
+    private static bool HasAtLeastTwoWords(string fullName)
     {
         if (string.IsNullOrWhiteSpace(fullName))
             return false;
@@ -119,7 +119,7 @@ internal static class AbstractValidatorExtensions
                formattedPatterns.Any(pattern => Regex.IsMatch(phoneNumber, pattern));
     }
 
-    private static string? GetPropertyValue<T>(T obj, Expression<Func<T, string?>> expression)
+    private static string GetPropertyValue<T>(T obj, Expression<Func<T, string>> expression)
     {
         var compiled = expression.Compile();
         return compiled(obj);

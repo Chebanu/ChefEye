@@ -24,18 +24,24 @@ public class UsersController : ControllerBase
     private readonly IValidator<AuthenticateUserRequest> _authenticateUserValidator;
     private readonly IValidator<AdminUpdateUserRequest> _adminUpdateUserValidator;
     private readonly IValidator<ConfirmEmailRequest> _confirmEmailValidator;
+    private readonly IValidator<RequestPasswordResetRequest> _requestPasswordResetValidator;
+    private readonly IValidator<ResetPasswordRequest> _resetPasswordValidator;
 
     public UsersController(IMediator mediator,
                           IValidator<RegisterUserRequest> registerUserValidator,
                           IValidator<AuthenticateUserRequest> authenticateUserValidator,
                           IValidator<AdminUpdateUserRequest> adminUpdateUserValidator,
-                          IValidator<ConfirmEmailRequest> confirmEmailValidator)
+                          IValidator<ConfirmEmailRequest> confirmEmailValidator,
+                          IValidator<RequestPasswordResetRequest> requestPasswordResetValidator,
+                          IValidator<ResetPasswordRequest> resetPasswordValidator)
     {
         _mediator = mediator;
         _registerUserValidator = registerUserValidator;
         _authenticateUserValidator = authenticateUserValidator;
         _adminUpdateUserValidator = adminUpdateUserValidator;
         _confirmEmailValidator = confirmEmailValidator;
+        _requestPasswordResetValidator = requestPasswordResetValidator;
+        _resetPasswordValidator = resetPasswordValidator;
     }
 
     [HttpPost]
@@ -243,5 +249,68 @@ However, the confirmation mail failed. Reason: {result.Errors.Select(x => x.Desc
                 Errors = result.Errors
             })
             : Ok();
+    }
+
+    [HttpPost("request-password-reset")]
+    [ProducesResponseType(typeof(object), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    public async Task<IActionResult> RequestPasswordReset(
+        [FromBody] RequestPasswordResetRequest request,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await _requestPasswordResetValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Errors = validationResult.Errors.Select(x => x.ErrorMessage).ToArray()
+            });
+        }
+
+        var command = new RequestPasswordResetCommand
+        {
+            Email = request.Email,
+            BaseUrl = $"{Request.Scheme}://{Request.Host}"
+        };
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new { message = "Reset mail just sent" });
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(object), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await _resetPasswordValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Errors = validationResult.Errors.Select(x => x.ErrorMessage).ToArray()
+            });
+        }
+
+        var command = new ResetPasswordCommand
+        {
+            Email = request.Email,
+            Token = request.Token,
+            NewPassword = request.NewPassword
+        };
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.Success)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Errors = result.Errors
+            });
+        }
+
+        return Ok(new { message = "Password has been reset successfully" });
     }
 }

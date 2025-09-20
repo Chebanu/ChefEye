@@ -54,6 +54,7 @@ builder.Services
 AuthenticationValidator.AddAuthenticationService(builder.Services, builder.Configuration);
 
 ServiceValidatorConfiguration.AddValidatorConfiguration(builder.Services);
+ServiceConfiguration.AddServiceConfiguration(builder.Services);
 
 builder.Services.Configure<OrderLimitsOptions>(
     builder.Configuration.GetSection("OrderLimits"));
