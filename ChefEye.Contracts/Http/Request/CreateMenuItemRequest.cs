@@ -1,6 +1,6 @@
 ﻿namespace ChefEye.Contracts.Http.Request;
 
-public class CreateMenuItem
+public  class CreateMenuItemRequest
 {
     public string Name { get; init; }
     public string Description { get; init; }

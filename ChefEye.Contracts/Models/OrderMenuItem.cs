@@ -7,7 +7,6 @@ public class OrderMenuItem
 {
     [Key]
     public Guid Id { get; set; }
-
     [ForeignKey(nameof(MenuItem))]
     public Guid MenuItemId { get; set; }
     public MenuItem MenuItem { get; set; }

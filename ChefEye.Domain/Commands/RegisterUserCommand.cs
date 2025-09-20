@@ -1,4 +1,6 @@
-﻿using ChefEye.Domain.Constants;
+﻿using ChefEye.Contracts.Models;
+using ChefEye.Domain.Constants;
+using ChefEye.Domain.DbContexts;
 using ChefEye.Domain.Handlers;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +11,7 @@ namespace ChefEye.Domain.Commands;
 public class RegisterUserCommand : IRequest<RegisterUserCommandResult>
 {
     public required string Username { get; init; }
+    public required string FullName { get; init; }
     public required string Password { get; init; }
     public required string Email { get; init; }
     public required string PhoneNumber { get; init; }
@@ -25,13 +28,16 @@ internal class RegisterUserCommandHandler : BaseRequestHandler<RegisterUserComma
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly ChefEyeDbContext _context;
 
     public RegisterUserCommandHandler(UserManager<IdentityUser> userManager,
                                         RoleManager<IdentityRole> roleManager,
-                                        ILogger<RegisterUserCommandHandler> logger) : base(logger)
+                                        ILogger<RegisterUserCommandHandler> logger,
+                                        ChefEyeDbContext context) : base(logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _context = context;
     }
 
     protected override async Task<RegisterUserCommandResult> HandleInternal(RegisterUserCommand request, CancellationToken cancellationToken)
@@ -59,6 +65,17 @@ internal class RegisterUserCommandHandler : BaseRequestHandler<RegisterUserComma
         }
 
         result = await _userManager.AddToRoleAsync(user, Roles.User);
+
+        var customer = new Customer
+        {
+            Username = request.Username,
+            FullName = request.FullName,
+            Email = request.Email,
+            PhoneNumber = request.PhoneNumber
+        };
+
+        await _context.Customers.AddAsync(customer, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new RegisterUserCommandResult
         {

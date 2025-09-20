@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using ChefEye.Domain.Handlers;
-using MediatR;
 using ChefEye.Contracts.Models;
 using ChefEye.Domain.DbContexts;
 

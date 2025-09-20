@@ -1,6 +1,8 @@
-﻿using ChefEye.Domain.Commands;
+﻿using ChefEye.Contracts.Http.Request;
+using ChefEye.Domain.Commands;
 using ChefEye.Domain.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChefEye.Api.Controllers;
@@ -16,15 +18,26 @@ public class OrderController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize]
     [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request, CancellationToken cancellationToken)
     {
-        if (command == null)
+        if (request == null)
             return BadRequest("Request body is null");
+
+        var command = new CreateOrderCommand
+        {
+            Customer = User.Identity.Name,
+            OrderMenuItemsDto = request.OrderMenuItems.Select(omi => new OrderMenuItemDto
+            {
+                MenuItemId = omi.MenuItemId,
+                Quantity = omi.Quantity
+            }).ToList()
+        };
 
         var result = await _mediator.Send(command, cancellationToken);
 
-        if (result.CreateOrderCommandResultType == CreateOrderCommandResultType.Success)
+        if (result.Success)
             return CreatedAtAction(nameof(GetOrder), new { id = result.OrderId }, result);
 
         return BadRequest(result.Errors);

@@ -1,7 +1,7 @@
-﻿using ChefEye.Api.Validator;
-using ChefEye.Api.Validators;
+﻿using ChefEye.Api.Validators;
 using ChefEye.Contracts.Http;
 using ChefEye.Contracts.Http.Request;
+using ChefEye.Domain.Validators;
 using FluentValidation;
 
 namespace ChefEye.Api.StartupExtensions;
@@ -13,6 +13,7 @@ public static class ServiceValidatorConfiguration
         return services.AddScoped<IValidator<RegisterUserRequest>, RegisterUserRequestValidator>()
                         .AddScoped<IValidator<AuthenticateUserRequest>, AuthenticateUserRequestValidator>()
                         .AddScoped<IValidator<AdminUpdateUserRequest>, AdminUpdateUserRequestValidator>()
-                        .AddScoped<IValidator<ConfirmEmailRequest>, ConfirmEmailRequestValidator>(); ;
+                        .AddScoped<IValidator<ConfirmEmailRequest>, ConfirmEmailRequestValidator>()
+                        .AddScoped<IValidator<CreateMenuItemRequest>, CreateMenuItemRequestValidator>();
     }
 }

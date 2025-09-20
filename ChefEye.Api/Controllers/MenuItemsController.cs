@@ -1,5 +1,8 @@
-﻿using ChefEye.Domain.Commands;
+﻿using ChefEye.Contracts.Http.Request;
+using ChefEye.Contracts.Http.Response;
+using ChefEye.Domain.Commands;
 using ChefEye.Domain.Queries;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,17 +13,32 @@ namespace ChefEye.Api.Controllers;
 public class MenuItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IValidator<CreateMenuItemRequest> _createMenuItemValidator;
 
-    public MenuItemsController(IMediator mediator)
+    public MenuItemsController(IMediator mediator, IValidator<CreateMenuItemRequest> createMenuItemValidator)
     {
         _mediator = mediator;
+        _createMenuItemValidator = createMenuItemValidator;
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemRequest request, CancellationToken cancellationToken)
     {
-        if (command == null)
-            return BadRequest("Request body is null");
+        var validationResult = await _createMenuItemValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Errors = validationResult.Errors.Select(x => x.ErrorMessage).ToArray()
+            });
+        }
+
+        var command = new CreateMenuItemCommand
+        {
+            Name = request.Name,
+            Description = request.Description,
+            Price = request.Price
+        };
 
         var result = await _mediator.Send(command, cancellationToken);
 

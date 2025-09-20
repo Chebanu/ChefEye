@@ -2,13 +2,14 @@
 using ChefEye.Contracts.Http.Request;
 using FluentValidation;
 
-namespace ChefEye.Api.Validator;
+namespace ChefEye.Api.Validators;
 
 internal class RegisterUserRequestValidator : AbstractValidator<RegisterUserRequest>
 {
     public RegisterUserRequestValidator()
     {
         this.RuleForUsername(x => x.Username);
+        this.RuleForFullName(x => x.FullName);
         this.RuleForPassword(x => x.Password);
         this.RuleForOptionalEmail(x => x.Email);
         this.RuleForPhoneNumber(x => x.PhoneNumber);

@@ -2,7 +2,7 @@
 using ChefEye.Contracts.Http;
 using FluentValidation;
 
-namespace ChefEye.Api.Validator;
+namespace ChefEye.Api.Validators;
 
 internal class AdminUpdateUserRequestValidator : AbstractValidator<AdminUpdateUserRequest>
 {

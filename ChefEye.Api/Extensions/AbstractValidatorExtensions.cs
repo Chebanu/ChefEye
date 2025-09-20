@@ -8,6 +8,8 @@ internal static class AbstractValidatorExtensions
 {
     public const string AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
+    public const string AllowedFullNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`' ";
+
     public const string AllowedPasswordCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+?.,";
 
     public static void RuleForUsername<T>(this AbstractValidator<T> validator, Expression<Func<T, string>> expression)
@@ -51,6 +53,25 @@ internal static class AbstractValidatorExtensions
             .WithMessage("Please provide a valid phone number. Supported formats: +1234567890, (123) 456-7890, 123-456-7890, 123.456.7890, 1234567890")
             .Length(10, 20)
             .WithMessage("Phone number must be between 10 and 20 characters long.");
+    }
+    public static void RuleForFullName<T>(this AbstractValidator<T> validator, Expression<Func<T, string?>> expression)
+    {
+        validator.RuleFor(expression)
+            .NotEmpty()
+            .WithMessage("Full name is required.")
+            .Must(fullName => HasAtLeastTwoWords(fullName))
+            .WithMessage("Full name must contain at least two words.")
+            .Must(x => x == null || x.All(c => AllowedFullNameCharacters.Contains(c)))
+            .WithMessage("Full name contains invalid characters.");
+    }
+
+    private static bool HasAtLeastTwoWords(string? fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return false;
+
+        var words = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return words.Length >= 2;
     }
     private static bool BeValidEmailDomain(string email)
     {
