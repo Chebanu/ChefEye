@@ -2,5 +2,6 @@
 
 public class ConfirmEmailRequest
 {
-    //public string Username { get; init; }
+    public string UserId { get; set; }
+    public string Token { get; set; }
 }

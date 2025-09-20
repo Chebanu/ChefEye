@@ -4,6 +4,7 @@ using ChefEye.Contracts.Http;
 using ChefEye.Contracts.Http.Request;
 using ChefEye.Contracts.Http.Response;
 using ChefEye.Domain.Commands;
+using ChefEye.Domain.Queries;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -99,6 +100,45 @@ However, the confirmation mail failed. Reason: {result.Errors.Select(x => x.Desc
     }
 
     [HttpGet("confirm-email")]
+    [ProducesResponseType(typeof(object), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailRequest request,
+                                                CancellationToken cancellationToken = default)
+    {
+        var validationResult = await _confirmEmailValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Errors = ["Confirmation link is invalid"]
+            });
+        }
+
+        var query = new ConfirmEmailQuery
+        {
+            UserId = request.UserId,
+            Token = request.Token
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (result.Success)
+        {
+            return Ok(new
+            {
+                message = "Email confirmed successfully!",
+                success = true
+            });
+        }
+
+        return BadRequest(new ErrorResponse
+        {
+            Errors = result.Errors
+        });
+    }
+
+    [HttpGet("resent-email")]
     [Authorize]
     [ProducesResponseType(typeof(object), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
