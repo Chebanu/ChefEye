@@ -1,12 +1,13 @@
-﻿using ChefEye.Api.Constants;
+﻿using ChefEye.Domain;
+using ChefEye.Api.Constants;
+using ChefEye.Domain.Services;
+using ChefEye.Domain.Constants;
 using ChefEye.Api.StartupExtensions;
 using ChefEye.Contracts.Models.ConfigModels;
-using ChefEye.Domain;
-using ChefEye.Domain.Constants;
-using Microsoft.AspNetCore.OData;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OData.ModelBuilder;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.OData;
+using Microsoft.OData.ModelBuilder;
+using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Security.Claims;
 
@@ -32,7 +33,8 @@ builder.Services.AddControllers()
         opt.AddRouteComponents("odata", odataBuilder.GetEdmModel())
             .Select().Filter().OrderBy().Expand();
     });
-    
+
+builder.Services.AddHostedService<OrderLimitInitializer>();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {

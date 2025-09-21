@@ -5,7 +5,7 @@
 namespace ChefEye.Domain.Migrations
 {
     /// <inheritdoc />
-    public partial class updcustomermodel : Migration
+    public partial class Updcustomermodel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -1,4 +1,5 @@
 using ChefEye.Contracts.Models;
+using ChefEye.Domain.Seeds;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ public class ChefEyeDbContext : IdentityDbContext<IdentityUser>
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        SeedData.Seed(modelBuilder);
+
         modelBuilder.Entity<MenuItem>()
             .Property(m => m.Price)
             .HasPrecision(18, 2);

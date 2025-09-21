@@ -122,6 +122,7 @@ public class CreateOrderCommandHandler : BaseRequestHandler<CreateOrderCommand, 
         {
             await transaction.RollbackAsync(cancellationToken);
             await db.StringDecrementAsync(currentKey);
+
             return new CreateOrderCommandResult
             {
                 Success = false,

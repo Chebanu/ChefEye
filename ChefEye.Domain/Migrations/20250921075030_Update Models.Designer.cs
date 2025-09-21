@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChefEye.Domain.Migrations
 {
     [DbContext(typeof(ChefEyeDbContext))]
-    [Migration("20250920183953_upd customer model")]
-    partial class Updcustomermodel
+    [Migration("20250921075030_Update Models")]
+    partial class UpdateModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,6 +66,26 @@ namespace ChefEye.Domain.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MenuItems");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("98758b15-218d-4711-a0dd-f7a87e80197f"),
+                            Name = "Pancake",
+                            Price = 4.5m
+                        },
+                        new
+                        {
+                            Id = new Guid("1cedff26-8134-4c53-b22a-7f3e61abb594"),
+                            Name = "Coffe",
+                            Price = 3.5m
+                        },
+                        new
+                        {
+                            Id = new Guid("e71ffcd6-01c2-48e9-8a11-b9e8ce2e9aef"),
+                            Name = "Pasta",
+                            Price = 13m
+                        });
                 });
 
             modelBuilder.Entity("ChefEye.Contracts.Models.Order", b =>
