@@ -43,6 +43,19 @@ public class OrderController : ControllerBase
         return BadRequest(result.Errors);
     }
 
+    [Authorize]
+    [HttpPatch("cancel-order")]
+    public async Task<IActionResult> CancelOrder([FromQuery] Guid orderId, CancellationToken ct)
+    {
+        var command = new CancelOrderCommand { OrderId = orderId, User = User.Identity.Name };
+        var result = await _mediator.Send(command, ct);
+
+        if (!result.Success)
+            return BadRequest(result.Error);
+
+        return Ok("Your order has successully been canceled");
+    }
+
     //[Authorize]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetOrder(Guid id, CancellationToken cancellationToken)

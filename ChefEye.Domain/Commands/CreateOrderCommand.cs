@@ -61,8 +61,30 @@ public class CreateOrderCommandHandler : BaseRequestHandler<CreateOrderCommand, 
         var db = _redis.GetDatabase();
         var now = DateTime.UtcNow;
         bool isNight = now.Hour >= 22 || now.Hour < 6;
-        int limit = isNight ? _limits.NightLimit : _limits.DayLimit;
-        var currentKey = isNight ? "orders:night" : "orders:day";
+
+        var shiftDate = isNight && now.Hour < 6
+            ? now.Date.AddDays(-1)
+            : now.Date;
+
+        string shiftType = isNight ? "night" : "day";
+        string currentKey = $"orders:{shiftType}:{shiftDate:yyyy-MM-dd}";
+        string limitKey = $"orders:limit:{shiftType}:{shiftDate:yyyy-MM-dd}";
+
+        int baseLimit = isNight ? _limits.NightLimit : _limits.DayLimit;
+
+        if (!await db.KeyExistsAsync(limitKey))
+        {
+            var redisLeftover = await db.StringGetAsync("orders:available");
+            int leftover = redisLeftover.HasValue ? (int)redisLeftover : 0;
+
+            int newLimit = baseLimit + leftover;
+
+            await db.StringSetAsync(limitKey, newLimit);
+            await db.StringSetAsync("orders:available", 0);
+        }
+
+        var redisLimit = await db.StringGetAsync(limitKey);
+        int limit = redisLimit.HasValue ? (int)redisLimit : 0;
 
         var newValue = await db.StringIncrementAsync(currentKey);
 
