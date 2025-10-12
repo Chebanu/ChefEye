@@ -1,13 +1,14 @@
-﻿using ChefEye.Domain;
-using ChefEye.Api.Constants;
-using ChefEye.Domain.Services;
-using ChefEye.Domain.Constants;
+﻿using ChefEye.Api.Constants;
 using ChefEye.Api.StartupExtensions;
 using ChefEye.Contracts.Models.ConfigModels;
-using Microsoft.OpenApi.Models;
+using ChefEye.Domain;
+using ChefEye.Domain.Constants;
+using ChefEye.Domain.DbContexts;
+using ChefEye.Domain.Services;
 using Microsoft.AspNetCore.OData;
-using Microsoft.OData.ModelBuilder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OData.ModelBuilder;
+using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using System.Security.Claims;
 
@@ -29,7 +30,6 @@ builder.Services.AddControllers()
     .AddOData(opt =>
     {
         var odataBuilder = new ODataConventionModelBuilder();
-
         opt.AddRouteComponents("odata", odataBuilder.GetEdmModel())
             .Select().Filter().OrderBy().Expand();
     });
@@ -39,7 +39,9 @@ builder.Services.AddHostedService<OrderLimitInitializer>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var configuration = builder.Configuration.GetConnectionString("Redis");
-    return ConnectionMultiplexer.Connect(configuration);
+    var options = ConfigurationOptions.Parse(configuration ?? "localhost:6379");
+    options.AbortOnConnectFail = false;
+    return ConnectionMultiplexer.Connect(options);
 });
 
 builder.Services.AddDomainServices(
@@ -54,7 +56,6 @@ builder.Services
     .AddPolicy(AuthorizePolicies.User, policy => policy.RequireClaim(ClaimTypes.Role, Roles.User));
 
 AuthenticationValidator.AddAuthenticationService(builder.Services, builder.Configuration);
-
 ServiceValidatorConfiguration.AddValidatorConfiguration(builder.Services);
 ServiceConfiguration.AddServiceConfiguration(builder.Services);
 
@@ -63,6 +64,22 @@ builder.Services.Configure<OrderLimitsOptions>(
 
 var app = builder.Build();
 
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        if (context.Response.Headers.ContainsKey("Location"))
+        {
+            var location = context.Response.Headers["Location"].ToString();
+            var cleanLocation = new string(location.Where(c => c >= 32 && c != 127).ToArray());
+            context.Response.Headers["Location"] = cleanLocation;
+        }
+        return Task.CompletedTask;
+    });
+
+    await next();
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -70,11 +87,23 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ChefEyeDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
 
 app.Run();

@@ -49,6 +49,18 @@ internal class RegisterUserCommandHandler : BaseRequestHandler<RegisterUserComma
             PhoneNumber = request.PhoneNumber
         };
 
+        var isDuplicateUserByUsername = await _userManager.FindByNameAsync(request.Username);
+        var isDuplicateUserByEmail = await _userManager.FindByEmailAsync(request.Email);
+
+        if (isDuplicateUserByUsername != null || isDuplicateUserByEmail != null)
+        {
+            return new RegisterUserCommandResult
+            {
+                Success = false,
+                Errors = new[] { new IdentityError { Description = "Username or Email already exists." } }
+            };
+        }
+
         var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
         {

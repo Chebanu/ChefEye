@@ -1,6 +1,7 @@
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
     environment:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
       ACCEPT_EULA: "Y"
@@ -23,10 +24,30 @@ services:
     image: redislabs/redisinsight:latest
     container_name: redisinsight
     ports:
-      - "8001:5540"
+      - "8001:8001"
     depends_on:
       - redis
     restart: unless-stopped
 
+  api:
+    build:
+      context: .
+      dockerfile: ./ChefEye.Api/Dockerfile
+    container_name: chefeye-api
+    ports:
+      - "5000:8080"
+    depends_on:
+      - mssql
+      - redis
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    networks:
+      - default
+
 volumes:
   redis_data:
+
+networks:
+  default:
+    driver: bridge

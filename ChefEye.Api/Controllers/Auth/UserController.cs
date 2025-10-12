@@ -49,7 +49,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
     public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request,
-                                                    CancellationToken cancellationToken = default)
+                                                CancellationToken cancellationToken = default)
     {
         var validationResult = await _registerUserValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
@@ -70,7 +70,6 @@ public class UsersController : ControllerBase
         };
 
         var result = await _mediator.Send(command, cancellationToken);
-
         if (!result.Success)
         {
             return BadRequest(new ErrorResponse
@@ -79,30 +78,33 @@ public class UsersController : ControllerBase
             });
         }
 
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        baseUrl = CleanHeaderValue(baseUrl);
+
         var emailCommand = new SendEmailConfirmationCommand
         {
             Username = request.Username,
             Subject = "Confirm your email",
-            BaseUrl = $"{Request.Scheme}://{Request.Host}",
+            BaseUrl = baseUrl,
             HtmlMessage = "..."
         };
 
-        var emailResult = await _mediator.Send(emailCommand);
+        var emailResult = await _mediator.Send(emailCommand, cancellationToken);
 
-        if (!emailResult.Success)
-        {
-            return Created(@$"{request.Username} username has been created.
-However, the confirmation mail failed. Reason: {result.Errors.Select(x => x.Description).ToList()}",
-            new RegisterUserResponse
-            {
-                UserId = result.UserId
-            });
-        }
+        var cleanUsername = CleanHeaderValue(request.Username);
+        var location = $"/users/{Uri.EscapeDataString(cleanUsername)}";
 
-        return Created($"{request.Username} username has been created", new RegisterUserResponse
-        {
-            UserId = result.UserId
-        });
+        var response = new RegisterUserResponse { UserId = result.UserId };
+
+        return Created(location, response);
+    }
+
+    private static string CleanHeaderValue(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        return new string(value.Where(c => c >= 32 && c != 127).ToArray());
     }
 
     [HttpGet("confirm-email")]
