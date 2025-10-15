@@ -30,6 +30,6 @@ public static class DomainServiceCollectionExtensions
             .Configure<JwtSettings>(jwt)
             .Configure<SmtpSettings>(smpt)
             .AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreateOrderCommand>())
-            .AddDbContext<ChefEyeDbContext>(options => options.UseSqlServer(connectionString));
+            .AddDbContext<ChefEyeDbContext>(options => options.UseNpgsql(connectionString));
     }
 }
