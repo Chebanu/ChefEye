@@ -11,6 +11,7 @@
 *.sln.docstates
 .env
 .data
+postgres_data
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
