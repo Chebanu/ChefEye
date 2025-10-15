@@ -1,17 +1,17 @@
 version: "3.9"
 
 services:
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql
+  postgres:
+    image: postgres:15
+    container_name: postgres
     environment:
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: ${MSSQL_PID}
-    ports:
-      - "1433:1433"
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_SA_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - ${VOLUME_PATH}/.data/mssql:/var/opt/mssql/data
+      - ${VOLUME_PATH}/postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5431:5432"
     networks:
       - shared
 
@@ -39,6 +39,7 @@ services:
 
 volumes:
   redis_data:
+  postgres_data:
 
 networks:
   shared:
