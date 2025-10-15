@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -10,6 +12,8 @@ services:
       - "1433:1433"
     volumes:
       - ${VOLUME_PATH}/.data/mssql:/var/opt/mssql/data
+    networks:
+      - shared
 
   redis:
     image: redis:latest
@@ -19,6 +23,8 @@ services:
     volumes:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - shared
 
   redisinsight:
     image: redislabs/redisinsight:latest
@@ -28,26 +34,13 @@ services:
     depends_on:
       - redis
     restart: unless-stopped
-
-  api:
-    build:
-      context: .
-      dockerfile: ./ChefEye.Api/Dockerfile
-    container_name: chefeye-api
-    ports:
-      - "5000:8080"
-    depends_on:
-      - mssql
-      - redis
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
     networks:
-      - default
+      - shared
 
 volumes:
   redis_data:
 
 networks:
-  default:
-    driver: bridge
+  shared:
+    external: true
+    name: chefeye_network
